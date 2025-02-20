@@ -94,8 +94,8 @@ X([2*lr+1 3*lr],2:K+1) = p_bcin;
 ionization_length = 1.4371e-04;
 % ionization_length = 1e-04;
 
-% A = ((r0+ionization_length)^2-r0^2)/pi;
 A = ((r0+ionization_length)^2-r0^2)*pi;
+% A = ((r0+ionization_length)^2-r0^2)*pi;
 
 I = 0.218e-3;
 % I = 0.2e-3;
