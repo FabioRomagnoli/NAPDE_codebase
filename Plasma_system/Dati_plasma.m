@@ -3,11 +3,13 @@ r0 = 700e-6;
 r1 = r0 + 10.35e-2;
 
 % Mesh 
-delta   = 2.4577e-05;
+% delta   = 2.4577e-05;
+delta   = 2.4577e-04;
+
 alpha_msh  = -0.1;
 msh = CreateTanhMsh(lr, r0, r1-r0, delta, alpha_msh);
 r = msh.x;
-
+% 
 T = K*dt;                      % seconds [s]
 
 epsilon = 8.8e-12;             % Permittivity              [C]/([V][m])
@@ -18,8 +20,10 @@ q = 1.6e-19;                   % Charge                    [C]
 Vth = 26e-3;                   % Thermal voltage           [V]
 
 % Plasma related constants
-% alpha = 7.2e5;         % impact ionization coefficient                    [m]/([s][V])
-alpha = 1.107778321468997e+25;
+alpha = 7.2e5;         % impact ionization coefficient                    [m]/([s][V])
+% alpha = 1.107778321468997e+25;
+% alpha = 1e22;
+
 S = S*ones(lr-2,1);   
 %E0 = 1e5;                 %  [V]/[m]
 %Ei=2.09e7;
@@ -85,3 +89,30 @@ X([1 lr],2:K+1) = v_bcin;
 X([lr+1 2*lr],2:K+1) = n_bcin;
 X([2*lr+1 3*lr],2:K+1) = p_bcin;
 
+%% ----------------------------------------
+
+ionization_length = 1.4371e-04;
+% ionization_length = 1e-04;
+
+% A = ((r0+ionization_length)^2-r0^2)/pi;
+A = ((r0+ionization_length)^2-r0^2)*pi;
+
+I = 0.218e-3;
+% I = 0.2e-3;
+
+G = I/(A*q);
+
+% rate di generazione medio : q*G*A = I 
+% densità di corrente all'emettitore : j = I/(2*pi*re)
+% coefficiente di generazione per impatto : alpha = G/j
+
+Jbar = mubar*Vbar*nbar/xbar;
+
+gen = zeros(lr-2,1);
+
+gen(r <= r0 + ionization_length) = G/(Jbar/xbar);
+% gen(r*0.1035<=800e-6) = 2.652582384864923e+21/5.601064202198418e+11;
+
+% Ic = 2.5e-4;
+% j = Ic/(2*pi*r0);
+% alphaC = G/j;
