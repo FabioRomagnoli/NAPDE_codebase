@@ -12,9 +12,9 @@ n = n*nbar;
 p = p*nbar;
 
 
-plot(r,p,r,n)
+semilogy(r,p,'o-',r,n,'x-')
 legend("p","n")
-
+grid on;
 drawnow;
 % pause(0.1)
 end
@@ -23,21 +23,26 @@ end
 % plot(r,v)
 % title('Electric potential')
 % 
-
-figure;
-phi00 = Vend * (1 - log (r/r0)/log(r1/r0));
-plot(r,v,r,phi00);
-title('Electric potential')
-
-
-figure;
-x_medi=(r(1:end-1)+r(2:end))/2;
-title('Corrente elettrica')
-Jn=Comp_current(r,mun,q,v,Vth,-1,n,x_medi);
-Jp=Comp_current(r,mup,q, v,Vth,1, p,x_medi);
-JJ=Jn+Jp;
-plot(x_medi,Jn,x_medi,Jp,x_medi,JJ);
-legend('Jn','Jp','JJ')
-
-
-
+% 
+% figure;
+% phi00 = Vend * (1 - log (r/r0)/log(r1/r0));
+% plot(r,v,r,phi00);
+% title('Electric potential')
+% 
+% 
+% figure;
+% x_medi=(r(1:end-1)+r(2:end))/2;
+% title('Corrente elettrica')
+% Jn=Comp_current(r,mun,q,v,Vth,-1,n,x_medi);
+% Jp=Comp_current(r,mup,q, v,Vth,1, p,x_medi);
+% JJ=Jn+Jp;
+% hold on;
+% 
+% plot(x_medi,Jn);
+% plot(x_medi,Jp);
+% plot(x_medi,JJ);
+% legend('Jn','Jp','JJ')
+% hold off;
+% 
+% 
+% 

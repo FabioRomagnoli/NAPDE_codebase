@@ -18,7 +18,8 @@ q = 1.6e-19;                   % Charge                    [C]
 Vth = 26e-3;                   % Thermal voltage           [V]
 
 % Plasma related constants
-alpha = 7.2e5;         % impact ionization coefficient                    [m]/([s][V])
+% alpha = 7.2e5;         % impact ionization coefficient                    [m]/([s][V])
+alpha = 1.107778321468997e+25;
 S = S*ones(lr-2,1);   
 %E0 = 1e5;                 %  [V]/[m]
 %Ei=2.09e7;

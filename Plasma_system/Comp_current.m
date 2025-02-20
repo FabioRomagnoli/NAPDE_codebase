@@ -7,10 +7,10 @@ function J = Comp_current(r,mu,q,v,Vth,z,n,x)
 
   [Bp, Bn] = bimu_bernoulli (DV);
 
-nBn=n(2:end).*Bn;
-nBp=n(1:end-1).*Bp;
+  nBn=n(2:end).*Bn;
+  nBp=n(1:end-1).*Bp;
 
-  J=z*q*mu*Vth./(log(r(1:end-1) ./ r(2:end))).*(nBn-nBp);
+  J=2*pi*z*q*mu*Vth./(log(r(1:end-1) ./ r(2:end))).*(nBn-nBp);
 
 
 
