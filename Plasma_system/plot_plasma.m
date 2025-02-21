@@ -31,11 +31,11 @@ end
 % 
 
 figure;
-x_medi=(r(1:end-1)+r(2:end))/2;
+x_medi = (r(1:end-1)+r(2:end))/2;
 title('Corrente elettrica')
-Jn=Comp_current(r,mun,q,v,Vth,-1,n,x_medi);
-Jp=Comp_current(r,mup,q, v,Vth,1, p,x_medi);
-JJ=Jn+Jp;
+Jn = Comp_current(r,mun,q,v,Vth,-1,n,x_medi);
+Jp = Comp_current(r,mup,q,v,Vth, 1,p,x_medi);
+JJ = Jn+Jp;
 hold on;
 
 plot(x_medi,Jn);

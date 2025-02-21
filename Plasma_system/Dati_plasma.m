@@ -3,8 +3,8 @@ r0 = 700e-6;
 r1 = r0 + 10.35e-2;
 
 % Mesh 
-% delta   = 2.4577e-05;
-delta   = 2.4577e-04;
+delta   = 2.4577e-05;
+% delta   = 2.4577e-03;
 
 alpha_msh  = -0.1;
 msh = CreateTanhMsh(lr, r0, r1-r0, delta, alpha_msh);
@@ -70,7 +70,7 @@ n0in = n0/nbar;
 v0in = v0/Vbar;
 
 Sin = S * xbar^2/(mubar*Vbar*nbar);
-alphain = alpha * xbar;
+% alphain = alpha * xbar;
 %E0in = E0 * xbar / Vbar; 
 
 v_bcin = v_bc/Vbar;
@@ -100,19 +100,28 @@ A = ((r0+ionization_length)^2-r0^2)*pi;
 I = 0.218e-3;
 % I = 0.2e-3;
 
+
+% gen = zeros(lr-2,K);
+% Glin = linspace(0,G,5);
+% for k=1:5
+%     gen(r <= r0 + ionization_length,k) = Glin(k)/(Jbar/xbar);
+% end
+
 G = I/(A*q);
-
-% rate di generazione medio : q*G*A = I 
-% densità di corrente all'emettitore : j = I/(2*pi*re)
-% coefficiente di generazione per impatto : alpha = G/j
-
 Jbar = mubar*Vbar*nbar/xbar;
-
 gen = zeros(lr-2,1);
-
 gen(r <= r0 + ionization_length) = G/(Jbar/xbar);
+
 % gen(r*0.1035<=800e-6) = 2.652582384864923e+21/5.601064202198418e+11;
 
 % Ic = 2.5e-4;
 % j = Ic/(2*pi*r0);
 % alphaC = G/j;
+
+
+% rate di generazione medio : q*G*A = I 
+% densità di corrente all'emettitore : j = I/(2*pi*re)
+% coefficiente di generazione per impatto : alpha = G/j
+
+alphaAnalytic = (2*pi*r0)/(A*q);
+alphain = alphaAnalytic * xbar;

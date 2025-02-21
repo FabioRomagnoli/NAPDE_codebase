@@ -15,7 +15,7 @@ M_full = ax_mass(r, 1);
 An_full = ax_dd(r, [v_bc(1); v; v_bc(2)], mun, Vth, -1);
 Ap_full = ax_dd(r, [v_bc(1); v; v_bc(2)], mup, Vth, 1); % Così il numero di valenza è corretto
 
-Ar_full = plasma_rhs3(r, [v_bc(1); v; v_bc(2)], mun, alpha, Vth, -1);
+Ar_full = Plasma_rhs2(r, [v_bc(1); v; v_bc(2)], mun, alpha, Vth, -1);
 
 % R_full = Plasma_rhs(r, [v_bc(1); v; v_bc(2)], [n_bc(1); n; n_bc(2)], mun, alpha, Vth, -1);
 
@@ -61,10 +61,10 @@ Ar_bc = Ar_full(2:end-1,[1 end]);
 % S = S.*int_S(2:end-1);
 
 % Includes the S term (for when using non constant generation term)
-% rhs = [zeros(lr-2,1);  dt*M*S + M*n0  ; dt*M*S + M*p0];
+rhs = [zeros(lr-2,1);  dt*M*S + M*n0  ; dt*M*S + M*p0];
 
 % doesn't include S (for when using constant integration term)
-rhs = [zeros(lr-2,1);  M*n0  ; M*p0];
+% rhs = [zeros(lr-2,1);  M*n0  ; M*p0];
 
 
 bounds = [A_bc*v_bc; dt*An_bc*n_bc; dt*Ap_bc*p_bc];
@@ -75,17 +75,25 @@ full_rhs = rhs - bounds;
 % F = NL*x + [zeros(lr-2,1); (-dt*R); (-dt*R)] - full_rhs ;
 
 % for plasma_rhs2 and 3 (best working so far?)
-% F = NL*x + [zeros(lr-2,1); -dt*(Ar*n+Ar_bc*n_bc); -dt*(Ar*n+Ar_bc*n_bc)] - full_rhs ;
+F = NL*x + [zeros(lr-2,1); -dt*(Ar*n+Ar_bc*n_bc); -dt*(Ar*n+Ar_bc*n_bc)] - full_rhs ;
 
 % constant throughout (useful for testing code only, very unphysical)
 % F = NL*x + [zeros(lr-2,1); (-dt*M*ones(lr-2,1)); (-dt*M*ones(lr-2,1))] - full_rhs ;
 
 % with gen term defined in dati_plasma
-F = NL*x + [zeros(lr-2,1); (-dt*M*gen); (-dt*M*gen)] - full_rhs ;
+% F = NL*x + [zeros(lr-2,1); (-dt*M*gen); (-dt*M*gen)] - full_rhs ;
 
 
 
 if nargout>1
+    % Non-constant reaction term
+    dRn = dt*Ar;  %derivata di R rispetto a n
+
+    % Constant reaction term
+    % dRn = zeri;  %derivata di R rispetto a n
+
+    % dRp is zero regardles since the generation term is based only on n
+
     v=[v_bc(1); v; v_bc(2)];    % Li sovrascrivo perché non servono più
     n=[n_bc(1); n; n_bc(2)];
     p=[p_bc(1); p; p_bc(2)];
@@ -123,10 +131,10 @@ if nargout>1
     J12 = M;
     J13 = -M;
     J21 = dt*mun*dAn(2:end-1, 2:end-1);
-    J22 = M + dt*An;
+    J22 = M + dt*An - dRn;
     J23 = zeri;
     J31 = dt*mup*dAp(2:end-1, 2:end-1); 
-    J32 = zeri;
+    J32 = -dRn;
     J33 = M + dt*Ap;
     jac = [J11, J12, J13;
            J21, J22, J23;

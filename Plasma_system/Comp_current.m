@@ -13,8 +13,6 @@ function J = Comp_current(r,mu,q,v,Vth,z,n,x)
   J=2*pi*z*q*mu*Vth./(log(r(1:end-1) ./ r(2:end))).*(nBn-nBp);
 
 
-
-
 end
 
 
