@@ -17,7 +17,6 @@ N = 1e7;                      % density constant [m-3]
 % Full Jacobian
 options = optimoptions('fsolve','SpecifyObjectiveGradient',true,'Display','iter'); %'MaxIterations',800,'OptimalityTolerance',1e2,'StepTolerance',1e-6);
 
-
 % The voltage at r=end is kept at 0
 Dati_plasma;
 solve_plasma;
