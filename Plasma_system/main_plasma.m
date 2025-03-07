@@ -1,6 +1,7 @@
 close all;
 clear;
 
+
 % Hyper parameters
 K = 50;                      % Time grid points
 lr = 201;
