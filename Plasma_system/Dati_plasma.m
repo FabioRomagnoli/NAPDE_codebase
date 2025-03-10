@@ -22,9 +22,8 @@ q = 1.6e-19;                   % Charge                    [C]
 Vth = 26e-3;                   % Thermal voltage           [V]
 
 % Plasma related constants
-% alpha = 7.2e5;         % impact ionization coefficient                    [m]/([s][V])
-% alpha = 1e+25;
-% alpha = 1e12;
+% beta = 7.2e5;         % impact ionization coefficient                    [m]/([s][V])
+% Ei = 2.09e7;
 
 S = S*ones(lr-2,1);   
 
@@ -52,7 +51,8 @@ xbar = r1-r0;                    % Lenght of device
 nbar = N;                        % This N doesn't have the same meaning as the diode problem
 Vbar = Vend;
 mubar= max(mun,mup);
-tbar = 1/(mubar*Vbar/xbar^2) ;  
+tbar = 1/(mubar*Vbar/xbar^2);  
+Jbar = mubar*Vbar*nbar/xbar;
 
 % Scaling procedure
 epsin = epsilon*Vbar/(q*nbar*xbar^2);     % adimensionale (squared normalized D. L.)
@@ -66,7 +66,8 @@ v0in = v0/Vbar;
 
 Sin = S * xbar^2/(mubar*Vbar*nbar);
 % alphain = alpha * xbar;
-%E0in = E0 * xbar / Vbar; 
+% betain = beta * xbar;
+% Eiin = Ei * xbar / Vbar; 
 
 v_bcin = v_bc/Vbar;
 n_bcin = n_bc/nbar;
@@ -87,57 +88,20 @@ X([lr+1 2*lr],2:K+1) = n_bcin;
 X([2*lr+1 3*lr],2:K+1) = p_bcin;
 
 %% GENERATION TERM --------------------------------------------------------
-
-ionization_length = 1.4371e-04;
-A = ((r0+ionization_length)^2-r0^2)*pi;
-% I = 0.218e-3;
-I = 0.759e-3;
-
-% gen = zeros(lr-2,K);
-% Glin = linspace(0,G,5);
-% for k=1:5
-%     gen(r <= r0 + ionization_length,k) = Glin(k)/(Jbar/xbar);
-% end
-
-G = I/(A*q);
-Jbar = mubar*Vbar*nbar/xbar;
-gen = zeros(lr-2,1);
-gen(r <= r0 + ionization_length) = G/(Jbar/xbar);
-
-% Ic = 2.344e-4;
-% j = Ic/(2*pi*r0);
-% alphaC = zeros(lr,1);
-% % alphaC(r <= r0 + ionization_length) = G/j;
-% alphaC(r <= r0 + ionization_length) = 7.2e5;
-% alphain = alphaC .* xbar;
-
 % rate di generazione medio : q*G*A = I 
 % densità di corrente all'emettitore : j = I/(2*pi*re*q)
 % coefficiente di generazione per impatto : alpha = G/j
 
+ionization_length = 1.4371e-04;
+A = ((r0+ionization_length)^2-r0^2)*pi;
+% I = 0.218e-3;
+
+G = I/(A*q);
+gen = zeros(lr-2,1);
+gen(r <= r0 + ionization_length) = G/(Jbar/xbar);
+
+% Ic = 2.344e-4;
+% j = Ic/(2*pi*r0*q);
+
 alphaAnalytic = (2*pi*r0)/(A);
 alphain = alphaAnalytic * xbar;
-
-
-%% % Townsend Ionization Coefficient in a Cylindrical Geometry
-
-beta = 7.2e5;
-betain = beta * xbar;
-Ei = 2.09e7;
-Eiin = Ei * xbar / Vbar; 
-    
-% Compute Electric Field E(r) as a function of radius
-% E = Vend ./ (r .* log(r1 / r0)); % Radial electric field
-% 
-% % Compute Ionization Coefficient alpha(r)
-% alpha = beta .* exp(-Ei ./ (E)); % Townsend formula
-
-% Plot results
-% figure;
-% semilogy(r, alpha*xbar, 'b', 'LineWidth', 2); % Log-scale for better visualization
-% xlabel('Radius r (m)');
-% ylabel('Ionization Coefficient \alpha (1/m)');
-% title('Townsend Ionization Coefficient \alpha(r)');
-% grid on;
-
-% alphain = alpha * xbar;

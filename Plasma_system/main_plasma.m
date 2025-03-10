@@ -5,12 +5,8 @@ clear;
 K = 50;                      % Time grid points
 lr = 101;
 dt = 1e-4;                    % Time separation  [s]
-Vsrt = 1e4;                   % Voltage at r=1 and t=1  [V]
-Vend = 1e4;                   % Ending voltage at r=1 and t=K*dt  [V]
-
-% Vsrt = 4.039e4;                   % Voltage at r=1 and t=1  [V]
-% Vend = 4.039e4;                   % Ending voltage at r=1 and t=K*dt  [V]
-
+Vsrt = 3.017e4;                   % Voltage at r=1 and t=1  [V]
+Vend = 3.017e4;                   % Ending voltage at r=1 and t=K*dt  [V]
 S = 1e9;                      % random constant  [?]
 N = 1e7;                      % density constant [m-3]
 

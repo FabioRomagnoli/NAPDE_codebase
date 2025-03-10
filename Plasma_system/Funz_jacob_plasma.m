@@ -18,8 +18,6 @@ M_full = ax_mass(r, 1);
 An_full = ax_dd(r, [v_bc(1); v; v_bc(2)], mun, Vth, -1);
 Ap_full = ax_dd(r, [v_bc(1); v; v_bc(2)], mup, Vth, 1); % Così il numero di valenza è corretto
 
-
-% 
 % Av_grad = ax_gradient(r);
 % E = -Av_grad*[v_bc(1); v; v_bc(2)];
 % alpha = beta .* exp(-Ei ./ E); % Townsend formula
@@ -31,7 +29,6 @@ Ap_full = ax_dd(r, [v_bc(1); v; v_bc(2)], mup, Vth, 1); % Così il numero di val
 % ylabel('Ionization Coefficient \alpha (1/m)');
 % title('Townsend Ionization Coefficient \alpha(r)');
 % grid on;
-
 
 %% GENERATION TERM --------------------------------------------------------
 Ar_full = Plasma_rhs2(r, [v_bc(1); v; v_bc(2)], mun, alpha, Vth, -1);
