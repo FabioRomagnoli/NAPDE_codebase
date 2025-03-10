@@ -11,8 +11,6 @@ nBp=n(1:end-1).*Bp;
 nBn=n(2:end).*Bn;
 
 xJ_l=abs(mu*Vth./(log(r(1:end-1) ./ r(2:end))).*(nBn-nBp).*dr/2);
-
-
 xJ_u=abs(mu*Vth./(log(r(1:end-1) ./ r(2:end))).*(nBn-nBp).*dr/2);
 
 R=alpha*([0; xJ_l]+[xJ_u; 0]);

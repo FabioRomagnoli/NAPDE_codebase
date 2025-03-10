@@ -1,4 +1,4 @@
-function [F,jac]=Funz_jacob_plasma(x, x0,v_bc,n_bc,p_bc,dt,r,mun,mup,eps,alpha,S,Vth, beta, Ei)
+function [F,jac]=Funz_jacob_plasma_gen(x, x0,v_bc,n_bc,p_bc,dt,r,mun,mup,eps,alpha,S,Vth,gen)
 % v_bc,n_bc e l'altro sono vettori colonna di 2 elementi che contengono le
 % condizioni al bordo di quelle var
 % NB x va passato colonna, è ridotto, dunque ha lunghezza lr-6
@@ -19,46 +19,17 @@ An_full = ax_dd(r, [v_bc(1); v; v_bc(2)], mun, Vth, -1);
 Ap_full = ax_dd(r, [v_bc(1); v; v_bc(2)], mup, Vth, 1); % Così il numero di valenza è corretto
 
 
-% 
-% Av_grad = ax_gradient(r);
-% E = -Av_grad*[v_bc(1); v; v_bc(2)];
-% alpha = beta .* exp(-Ei ./ E); % Townsend formula
-
-% % Plot results
-% figure;
-% semilogy(r, alpha, 'b', 'LineWidth', 2); % Log-scale for better visualization
-% xlabel('Radius r (m)');
-% ylabel('Ionization Coefficient \alpha (1/m)');
-% title('Townsend Ionization Coefficient \alpha(r)');
-% grid on;
-
-
-%% GENERATION TERM --------------------------------------------------------
-Ar_full = Plasma_rhs2(r, [v_bc(1); v; v_bc(2)], mun, alpha, Vth, -1);
-
-% Ar_full = plasma_rhs3(r, [v_bc(1); v; v_bc(2)], mun, alpha, Vth, -1);
-
-% R_full = Plasma_rhs(r, [v_bc(1); v; v_bc(2)], [n_bc(1); n; n_bc(2)], mun, alpha, Vth, -1);
-% R = R_full(2:end-1);
-% NB Se uso Plasma_rhs1 viene restituito direttamente il vettore
-% moltiplicato per n, al quale devo togliere il primo e l'ultimo termine,
-% ma è già comprensivo della correzione con i termini di bordo, dunque devo
-% levarli da sotto (riga 66)
-
-
 %% BC CORRECTION ----------------------------------------------------------
 A = A_full(2:end-1,2:end-1);
 M = M_full(2:end-1,2:end-1);
 An = An_full(2:end-1,2:end-1);
 Ap = Ap_full(2:end-1,2:end-1);
-Ar = Ar_full(2:end-1,2:end-1);
 
 
 % getting the first and last elements of the matrices 
 A_bc = A_full(2:end-1,[1 end]);
 An_bc = An_full(2:end-1,[1 end]);
 Ap_bc = Ap_full(2:end-1,[1 end]);
-Ar_bc = Ar_full(2:end-1,[1 end]);
 
 
 %% FULL MATRIX CONSTRUCTION -----------------------------------------------
@@ -73,31 +44,20 @@ p0 = x0(2*lr-3:end);
 
 
 %% RHS AND BOUNDS ---------------------------------------------------------
-% Includes the S term (for when using non constant generation term)
-rhs = [zeros(lr-2,1);  dt*M*S + M*n0  ; dt*M*S + M*p0];
+% doesn't include S (for when using constant integration term)
+rhs = [zeros(lr-2,1);  M*n0  ; M*p0];
 
 bounds = [A_bc*v_bc; dt*An_bc*n_bc; dt*Ap_bc*p_bc];
 full_rhs = rhs - bounds;
 
 
 %% FULL SYSTEM ------------------------------------------------------------
-% for plasma_rhs1
-% F = NL*x + [zeros(lr-2,1); (-dt*R); (-dt*R)] - full_rhs ;
-
-% for plasma_rhs2 and 3 (best working so far?)
-F = NL*x + [zeros(lr-2,1); -dt*(Ar*n+Ar_bc*n_bc); -dt*(Ar*n+Ar_bc*n_bc)] - full_rhs ;
+% with gen term defined in dati_plasma
+F = NL*x + [zeros(lr-2,1); (-dt*M*gen); (-dt*M*gen)] - full_rhs ;
 
 
 %% JACOBIAN ---------------------------------------------------------------
 if nargout>1
-    % Non-constant reaction term
-    dRn = dt*Ar;  %derivata di R rispetto a n
-
-    % Constant reaction term
-    % dRn = zeri;  %derivata di R rispetto a n
-
-    % dRp is zero regardles since the generation term is based only on n
-
     v=[v_bc(1); v; v_bc(2)];    % Li sovrascrivo perché non servono più
     n=[n_bc(1); n; n_bc(2)];
     p=[p_bc(1); p; p_bc(2)];
@@ -135,10 +95,10 @@ if nargout>1
     J12 = M;
     J13 = -M;
     J21 = dt*mun*dAn(2:end-1, 2:end-1);
-    J22 = M + dt*An - dRn;
+    J22 = M + dt*An;
     J23 = zeri;
     J31 = dt*mup*dAp(2:end-1, 2:end-1); 
-    J32 = -dRn;
+    J32 = zeri;
     J33 = M + dt*Ap;
     jac = [J11, J12, J13;
            J21, J22, J23;
