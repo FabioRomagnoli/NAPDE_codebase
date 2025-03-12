@@ -33,15 +33,6 @@ Ap_full = ax_dd(r, [v_bc(1); v; v_bc(2)], mup, Vth, 1); % Così il numero di val
 %% GENERATION TERM --------------------------------------------------------
 Ar_full = Plasma_rhs2(r, [v_bc(1); v; v_bc(2)], mun, alpha, Vth, -1);
 
-% Ar_full = plasma_rhs3(r, [v_bc(1); v; v_bc(2)], mun, alpha, Vth, -1);
-
-% R_full = Plasma_rhs(r, [v_bc(1); v; v_bc(2)], [n_bc(1); n; n_bc(2)], mun, alpha, Vth, -1);
-% R = R_full(2:end-1);
-% NB Se uso Plasma_rhs1 viene restituito direttamente il vettore
-% moltiplicato per n, al quale devo togliere il primo e l'ultimo termine,
-% ma è già comprensivo della correzione con i termini di bordo, dunque devo
-% levarli da sotto (riga 66)
-
 
 %% BC CORRECTION ----------------------------------------------------------
 A = A_full(2:end-1,2:end-1);
@@ -78,11 +69,12 @@ full_rhs = rhs - bounds;
 
 
 %% FULL SYSTEM ------------------------------------------------------------
-% for plasma_rhs1
-% F = NL*x + [zeros(lr-2,1); (-dt*R); (-dt*R)] - full_rhs ;
+
+Rhs_red = zeros(lr-2,1);
+Rhs_red(1:36) = Ar(1:36,1:36)*n(1:36);
 
 % for plasma_rhs2 and 3 (best working so far?)
-F = NL*x + [zeros(lr-2,1); -dt*(Ar*n+Ar_bc*n_bc); -dt*(Ar*n+Ar_bc*n_bc)] - full_rhs ;
+F = NL*x + [zeros(lr-2,1); -dt*(Rhs_red+Ar_bc*n_bc); -dt*(Ar*n+Ar_bc*n_bc)] - full_rhs ;
 
 
 %% JACOBIAN ---------------------------------------------------------------

@@ -1,46 +1,97 @@
-figure;
-title('Electron and hole concentrations')
+%% REDIMENSIONALIZATION
 
-for k=1:K
-v = X(1:lr,k);
-n = X(lr + 1:2*lr,k);
-p = X(2*lr + 1:end,k);
+% concentration_plot = 1;
+% potential_plot = 1;
+% current_plot = 1;
+
+% extracting vectors 
+vAll = X(1:lr,:);
+nAll = X(lr + 1:2*lr,:);
+pAll = X(2*lr + 1:end,:);
 
 % Descaling procedure
-v = v*Vbar;
-n = n*nbar;
-p = p*nbar;
+vAll = vAll*Vbar;
+nAll = nAll*nbar;
+pAll = pAll*nbar;
 
+% Final values
+vEnd = vAll(:,end);
+nEnd = nAll(:,end);
+pEnd = pAll(:,end);
 
-% semilogy(r,p,'o-',r,n,'x-')
-semilogy(r,p,r,n)
-legend("p","n")
-grid on;
-drawnow;
-% pause(0.1)
+%% CONCENTRATIONS ---------------------------------------------------------
+if concentration_plot 
+    kPlot = K;
+    figure;
+    title('Electron and hole concentrations')
+    for k=kPlot:K
+        clf; % Clear figure before plotting new data
+        hold on;
+
+        vk = vAll(:,k);
+        nk = nAll(:,k);
+        pk = pAll(:,k);
+
+        % semilogy(r,p,'o-',r,n,'x-')
+        % semilogy(r,pk, "DisplayName", "p");
+        semilogy(r,nk, "DisplayName", "n");
+        hold off;
+
+        grid on; 
+        legend();
+        set(gca, 'YScale', 'log')
+        set(gca, 'XScale', 'log')
+
+        drawnow;
+    end
+end
+%% ELECTRIC POTENTIAL -----------------------------------------------------
+if potential_plot 
+    kPlot = K;
+    figure;
+    title('Electric potential')
+    for k=kPlot:K
+        clf; % Clear figure before plotting new data
+
+        vk = vAll(:,k);
+        plot(r,vk, "DisplayName", "v");
+
+        grid on; 
+        legend();
+        drawnow;
+    end
+
 end
 
-% figure;
-% plot(r,v)
-% title('Electric potential')
-% 
-% 
-% figure;
-% phi00 = Vend * (1 - log (r/r0)/log(r1/r0));
-% plot(r,v,r,phi00);
-% title('Electric potential')
-% 
+%% CURRENT PLOT -----------------------------------------------------------
+if current_plot 
+    kPlot = K;
+    x_medi = (r(1:end-1)+r(2:end))/2;
+    figure;
 
-figure;
-x_medi = (r(1:end-1)+r(2:end))/2;
-title('Corrente elettrica')
-Jn = Comp_current(r,mun,q,v,Vth,-1,n);
-Jp = Comp_current(r,mup,q,v,Vth, 1,p);
-JJ = Jn+Jp;
-hold on;
+    title('Corrente elettrica')
+    for k=kPlot:K
+        clf; % Clear figure before plotting new data
+        vk = vAll(:,k);
+        nk = nAll(:,k);
+        pk = pAll(:,k);
 
-plot(x_medi,Jn,"-o");
-plot(x_medi,Jp);
-plot(x_medi,JJ);
-legend('Jn','Jp','JJ')
-hold off;
+        Jn = Comp_current(r,mun,q,vk,Vth,-1,nk);
+        Jp = Comp_current(r,mup,q,vk,Vth, 1,pk);
+        JJ = Jn+Jp;
+
+        hold on;
+        plot(x_medi,Jn, "DisplayName","Jn");
+        plot(x_medi,Jp, "DisplayName","Jp");
+        plot(x_medi,JJ, "DisplayName","JJ");
+        hold off;
+
+        grid on; 
+        legend();
+        set(gca, 'YScale', 'log')
+        set(gca, 'XScale', 'log')
+
+        drawnow;
+    end
+
+end

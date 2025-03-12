@@ -7,13 +7,13 @@ function Ar = Plasma_rhs3(r, v, mu, alpha, Vth, z)
 
     [Bp, Bm] = bimu_bernoulli(DV);
 
-    fll = - (Bp .* coeff);   % fll corresponds to -B_{p_l} * coeff
-    fru =   (Bm .* coeff);      % fru corresponds to B_{n_u} * coeff
+    fll = - mu * Vth * alpha .* (Bp .* coeff);   % fll corresponds to -B_{p_l} * coeff
+    fru =   mu * Vth * alpha .* (Bm .* coeff);      % fru corresponds to B_{n_u} * coeff
     
-    dd = [fll; 0] + [0; fru];
+    dd = [fll; 0] - [0; fru];
     du = [0; fru];    % upper diagonal (shifted down by one)
-    dl = [fll; 0];   % lower diagonal (shifted up by one)
+    dl = [-fll; 0];   % lower diagonal (shifted up by one)
     
-    Ar = - mu * Vth * alpha * spdiags([dl, dd, du], -1:1, ndof, ndof);
+    Ar = spdiags([-dl, dd, -du], -1:1, ndof, ndof);
 
 end

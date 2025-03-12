@@ -4,12 +4,14 @@ r0 = 700e-6;
 r1 = r0 + 10.35e-2;
 
 % Mesh 
-delta   = 2.4577e-05; % original value  
-% delta   = 2.4577e-03;
+% delta   = 2.4577e-05; % original value  
+delta   = 2.4577e-07;
 
 alpha_msh  = -0.1;
 msh = CreateTanhMsh(lr, r0, r1-r0, delta, alpha_msh);
 r = msh.x;
+
+% r = linspace(r0,r1,lr)';
 
 %% PARAMETERS -------------------------------------------------------------
 T = K*dt;                      % seconds [s]
@@ -22,8 +24,8 @@ q = 1.6e-19;                   % Charge                    [C]
 Vth = 26e-3;                   % Thermal voltage           [V]
 
 % Plasma related constants
-% beta = 7.2e5;         % impact ionization coefficient                    [m]/([s][V])
-% Ei = 2.09e7;
+beta = 7.2e5;         % impact ionization coefficient                    [m]/([s][V])
+Ei = 2.09e7;
 
 S = S*ones(lr-2,1);   
 
@@ -66,8 +68,8 @@ v0in = v0/Vbar;
 
 Sin = S * xbar^2/(mubar*Vbar*nbar);
 % alphain = alpha * xbar;
-% betain = beta * xbar;
-% Eiin = Ei * xbar / Vbar; 
+betain = beta * xbar;
+Eiin = Ei * xbar / Vbar; 
 
 v_bcin = v_bc/Vbar;
 n_bcin = n_bc/nbar;
@@ -75,6 +77,7 @@ p_bcin = p_bc/nbar;
 
 munin=mun/mubar; 
 mupin=mup/mubar;
+
 
 
 %% VECTOR BUILDING --------------------------------------------------------
@@ -92,16 +95,38 @@ X([2*lr+1 3*lr],2:K+1) = p_bcin;
 % densità di corrente all'emettitore : j = I/(2*pi*re*q)
 % coefficiente di generazione per impatto : alpha = G/j
 
-ionization_length = 1.4371e-04;
-A = ((r0+ionization_length)^2-r0^2)*pi;
-% I = 0.218e-3;
+% ionization_length = 1.4371e-04;
+ionization_length = 1.4351e-04;
+idx = find(r >= r0 + ionization_length,1);
 
-G = I/(A*q);
-gen = zeros(lr-2,1);
-gen(r <= r0 + ionization_length) = G/(Jbar/xbar);
+% DeFalco derivation 11/03
+M_full = ax_mass(r, 1);
+genfull = zeros(lr,1);
+genfull(2:idx) = 1;
+G = (Iz/q)/(2*pi*sum(M_full*genfull));
+genfull = G*genfull;
+genin = genfull(2:end-1)/(Jbar/xbar);
 
-% Ic = 2.344e-4;
-% j = Ic/(2*pi*r0*q);
+% Equivalent form for gen term
+% A = (r(idx)*r(idx+1)-r0^2)*pi;
+% G2 = (Iz/q)/A;
+% gen2in = zeros(lr,1);
+% gen2in(2:idx) =  G2/(Jbar/xbar);
+% gen2in = gen2in(2:end-1);
 
-alphaAnalytic = (2*pi*r0)/(A);
-alphain = alphaAnalytic * xbar;
+% Proof of above equivalence
+% this ratio is 1 
+% ans = 2*pi*sum(diag(M_full))/(((r1)^2-r0^2)*pi);
+% This ratio is also 1
+% ans = 2*pi*sum(M_full*gen)/((r(idx)*r(idx+1)-r0^2)*pi);
+
+%% ALPHA ------------------------------------------------------------------
+
+% alphaAnalytic = (2*pi*r0)/(A);
+alphaZ = 1.1397e+04;  % 54;
+% alphaTemp = ones(K);
+% alphaTemp(1:50) = linspace(0,1,50);
+% alphaZv = zeros(lr,1);
+% alphaZv(r <= r0 + ionization_length) = alphaZ;
+alphain = alphaZ * xbar;
+
