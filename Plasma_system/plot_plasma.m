@@ -95,3 +95,9 @@ if current_plot
     end
 
 end
+%% 
+% dd = [0; diff(x_medi)/2] + [diff(x_medi)/2; 0];
+% 
+% plot(x_medi, dd.*Jn)
+% set(gca, 'YScale', 'log')
+% set(gca, 'XScale', 'log')

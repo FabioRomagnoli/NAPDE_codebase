@@ -58,9 +58,9 @@ F = NL*x + [zeros(lr-2,1); (-dt*M*gen); (-dt*M*gen)] - full_rhs ;
 
 %% JACOBIAN ---------------------------------------------------------------
 if nargout>1
-    v=[v_bc(1); v; v_bc(2)];    % Li sovrascrivo perché non servono più
-    n=[n_bc(1); n; n_bc(2)];
-    p=[p_bc(1); p; p_bc(2)];
+    vJ=[v_bc(1); v; v_bc(2)];    % Li sovrascrivo perché non servono più
+    nJ=[n_bc(1); n; n_bc(2)];
+    pJ=[p_bc(1); p; p_bc(2)];
 
     dAn = zeros(lr, lr);    % NB Si calcola anche la derivata in v0 e v(lr)( condiz al bordo), ma tanto sotto le rimuovo
     dAp = zeros(lr, lr);    
@@ -70,22 +70,22 @@ if nargout>1
         log_pos = 1/log(r(i)/r(i+1));
         log_neg = 1/log(r(i-1)/r(i));
         
-        up_neg = (v(i+1) - v(i))/Vth;
-        up_pos = (v(i) - v(i+1))/Vth;
-        dw_neg = (v(i) - v(i-1))/Vth;
-        dw_pos = (v(i-1) - v(i))/Vth;
+        up_neg = (vJ(i+1) - vJ(i))/Vth;
+        up_pos = (vJ(i) - vJ(i+1))/Vth;
+        dw_neg = (vJ(i) - vJ(i-1))/Vth;
+        dw_pos = (vJ(i-1) - vJ(i))/Vth;
 
 
-        dAn(i,i-1) = log_neg * (n(i)*DB(dw_neg) + n(i-1)*DB(dw_pos));
-        dAn(i,i) = log_pos * (-n(i+1)*DB(up_neg) - n(i)*DB(up_pos)) +...
-                        log_neg * (-n(i)*DB(dw_neg) - n(i-1)*DB(dw_pos));
-        dAn(i,i+1) = log_pos * (n(i+1)*DB(up_neg) + n(i)*DB(up_pos));
+        dAn(i,i-1) = log_neg * (nJ(i)*DB(dw_neg) + nJ(i-1)*DB(dw_pos));
+        dAn(i,i) = log_pos * (-nJ(i+1)*DB(up_neg) - nJ(i)*DB(up_pos)) +...
+                        log_neg * (-nJ(i)*DB(dw_neg) - nJ(i-1)*DB(dw_pos));
+        dAn(i,i+1) = log_pos * (nJ(i+1)*DB(up_neg) + nJ(i)*DB(up_pos));
 
 
-        dAp(i,i-1) = log_neg * (-p(i)*DB(-dw_neg) - p(i-1)*DB(-dw_pos));
-        dAp(i,i) = log_pos * (p(i+1)*DB(-up_neg) + p(i)*DB(-up_pos)) +...
-                        log_neg * (p(i)*DB(-dw_neg) + p(i-1)*DB(-dw_pos));
-        dAp(i,i+1) = log_pos * (-p(i+1) * DB(-up_neg) - p(i)*DB(-up_pos));
+        dAp(i,i-1) = log_neg * (-pJ(i)*DB(-dw_neg) - pJ(i-1)*DB(-dw_pos));
+        dAp(i,i) = log_pos * (pJ(i+1)*DB(-up_neg) + pJ(i)*DB(-up_pos)) +...
+                        log_neg * (pJ(i)*DB(-dw_neg) + pJ(i-1)*DB(-dw_pos));
+        dAp(i,i+1) = log_pos * (-pJ(i+1) * DB(-up_neg) - pJ(i)*DB(-up_pos));
 
     end
     

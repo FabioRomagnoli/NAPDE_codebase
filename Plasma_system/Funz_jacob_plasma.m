@@ -1,4 +1,4 @@
-function [F,jac]=Funz_jacob_plasma(x, x0,v_bc,n_bc,p_bc,dt,r,mun,mup,eps,alpha,S,Vth, beta, Ei)
+function [F,jac]=Funz_jacob_plasma(x, x0,v_bc,n_bc,p_bc,dt,r,mun,mup,eps,alpha,S,Vth, beta, Ei, gen)
 % v_bc,n_bc e l'altro sono vettori colonna di 2 elementi che contengono le
 % condizioni al bordo di quelle var
 % NB x va passato colonna, è ridotto, dunque ha lunghezza lr-6
@@ -35,7 +35,7 @@ Ar_full = Plasma_rhs2(r, [v_bc(1); v; v_bc(2)], mun, alpha, Vth, -1);
 
 R = zeros(lr-2,1);
 R_full = Plasma_rhs(r, [v_bc(1); v; v_bc(2)], [n_bc(1); n; n_bc(2)], mun, alpha, Vth, -1);
-R(1:36) = R_full(2:37);
+R(1:35) = R_full(2:36);
 
 %% BC CORRECTION ----------------------------------------------------------
 A = A_full(2:end-1,2:end-1);
@@ -81,6 +81,24 @@ full_rhs = rhs - bounds;
 % for plasma_rhs2 and 3 not reduced (best working so far?)
 % F = NL*x + [zeros(lr-2,1); -dt*(Ar*n+Ar_bc*n_bc); -dt*(Ar*n+Ar_bc*n_bc)] - full_rhs ;
 
+
+%% 
+
+% figure();
+% title('solution')
+% hold on; 
+% semilogy(r(2:end-1), M*gen, "b-o", 'DisplayName', 'Gen');
+% semilogy(r(2:end-1), R, "k-s", 'DisplayName', 'rhs1');
+% % semilogy(rin(2:end-1), Rhs_red+Ar_bc(:,1)*n_bcin(1), "r-*", 'DisplayName', 'Rh2')
+% hold off; 
+% 
+% legend();
+% set(gca, 'YScale', 'log')
+% set(gca, 'XScale', 'log')
+% grid on; 
+
+
+%%
 % for plasma_rhs1 
 F = NL*x + [zeros(lr-2,1); (-dt*R); (-dt*R)] - full_rhs ;
 
@@ -100,6 +118,7 @@ if nargout>1
 
     dAn = zeros(lr, lr);    % NB Si calcola anche la derivata in v0 e v(lr)( condiz al bordo), ma tanto sotto le rimuovo
     dAp = zeros(lr, lr);    
+    dAr = zeros(lr, lr);    
 
     for i=2:lr-1
 
@@ -123,6 +142,12 @@ if nargout>1
                         log_neg * (p(i)*DB(-dw_neg) + p(i-1)*DB(-dw_pos));
         dAp(i,i+1) = log_pos * (-p(i+1) * DB(-up_neg) - p(i)*DB(-up_pos));
 
+
+        dAr(i,i-1) = -((r(i)-r(i-1))/2) *log_neg * (n(i)*DB(dw_neg) + n(i-1)*DB(dw_pos));
+        dAr(i,i) = ((r(i+1)-r(i))/2) * log_pos * (-n(i+1)*DB(up_neg) - n(i)*DB(up_pos)) -...
+                        ((r(i)-r(i-1))/2) * log_neg * (-n(i)*DB(dw_neg) - n(i-1)*DB(dw_pos));
+        dAr(i,i+1) = ((r(i+1)-r(i))/2) * log_pos * (n(i+1)*DB(up_neg) + n(i)*DB(up_pos));
+
     end
     
     % potrebbero esserci dei termini che dividono dAn e dAp dai vol finiti
@@ -130,10 +155,10 @@ if nargout>1
     J11 = A;
     J12 = M;
     J13 = -M;
-    J21 = dt*mun*dAn(2:end-1, 2:end-1);
+    J21 = dt*mun*dAn(2:end-1, 2:end-1) - mun*dt*dAr(2:end-1,2:end-1);
     J22 = M + dt*An - dRn;
     J23 = zeri;
-    J31 = dt*mup*dAp(2:end-1, 2:end-1); 
+    J31 = dt*mup*dAp(2:end-1, 2:end-1) - mun*dt*dAr(2:end-1,2:end-1); 
     J32 = -dRn;
     J33 = M + dt*Ap;
     jac = [J11, J12, J13;
