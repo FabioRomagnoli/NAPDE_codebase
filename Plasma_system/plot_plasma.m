@@ -21,7 +21,7 @@ pEnd = pAll(:,end);
 
 %% CONCENTRATIONS ---------------------------------------------------------
 if concentration_plot 
-    kPlot = K;
+    kPlot = concentration_plot;
     figure;
     title('Electron and hole concentrations')
     for k=kPlot:K
@@ -33,7 +33,7 @@ if concentration_plot
         pk = pAll(:,k);
 
         % semilogy(r,p,'o-',r,n,'x-')
-        % semilogy(r,pk, "DisplayName", "p");
+        semilogy(r,pk, "DisplayName", "p");
         semilogy(r,nk, "DisplayName", "n");
         hold off;
 
@@ -47,7 +47,7 @@ if concentration_plot
 end
 %% ELECTRIC POTENTIAL -----------------------------------------------------
 if potential_plot 
-    kPlot = K;
+    kPlot = potential_plot;
     figure;
     title('Electric potential')
     for k=kPlot:K
@@ -65,10 +65,10 @@ end
 
 %% CURRENT PLOT -----------------------------------------------------------
 if current_plot 
-    kPlot = K;
-    x_medi = (r(1:end-1)+r(2:end))/2;
+    kPlot = current_plot;
     figure;
 
+    x_medi = (r(1:end-1)+r(2:end))/2;
     title('Corrente elettrica')
     for k=kPlot:K
         clf; % Clear figure before plotting new data

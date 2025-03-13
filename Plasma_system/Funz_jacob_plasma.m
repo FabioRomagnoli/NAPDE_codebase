@@ -33,6 +33,9 @@ Ap_full = ax_dd(r, [v_bc(1); v; v_bc(2)], mup, Vth, 1); % Così il numero di val
 %% GENERATION TERM --------------------------------------------------------
 Ar_full = Plasma_rhs2(r, [v_bc(1); v; v_bc(2)], mun, alpha, Vth, -1);
 
+R = zeros(lr-2,1);
+R_full = Plasma_rhs(r, [v_bc(1); v; v_bc(2)], [n_bc(1); n; n_bc(2)], mun, alpha, Vth, -1);
+R(1:36) = R_full(2:37);
 
 %% BC CORRECTION ----------------------------------------------------------
 A = A_full(2:end-1,2:end-1);
@@ -69,13 +72,17 @@ full_rhs = rhs - bounds;
 
 
 %% FULL SYSTEM ------------------------------------------------------------
+% Rhs_red = zeros(lr-2,1);
+% Rhs_red(1:36) = Ar(1:36,1:36)*n(1:36);
+% Rhs_red(36) = Rhs_red(36)+Ar(36,37)*n(37);
+% % reduced system without gobba 
+% F = NL*x + [zeros(lr-2,1); -dt*(Rhs_red+Ar_bc(:,1)*n_bc(1)); -dt*(Rhs_red+Ar_bc(:,1)*n_bc(1))] - full_rhs;
 
-Rhs_red = zeros(lr-2,1);
-Rhs_red(1:36) = Ar(1:36,1:36)*n(1:36);
+% for plasma_rhs2 and 3 not reduced (best working so far?)
+% F = NL*x + [zeros(lr-2,1); -dt*(Ar*n+Ar_bc*n_bc); -dt*(Ar*n+Ar_bc*n_bc)] - full_rhs ;
 
-% for plasma_rhs2 and 3 (best working so far?)
-F = NL*x + [zeros(lr-2,1); -dt*(Rhs_red+Ar_bc*n_bc); -dt*(Ar*n+Ar_bc*n_bc)] - full_rhs ;
-
+% for plasma_rhs1 
+F = NL*x + [zeros(lr-2,1); (-dt*R); (-dt*R)] - full_rhs ;
 
 %% JACOBIAN ---------------------------------------------------------------
 if nargout>1

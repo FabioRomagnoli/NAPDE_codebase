@@ -90,6 +90,8 @@ X([1 lr],2:K+1) = v_bcin;
 X([lr+1 2*lr],2:K+1) = n_bcin;
 X([2*lr+1 3*lr],2:K+1) = p_bcin;
 
+
+
 %% GENERATION TERM --------------------------------------------------------
 % rate di generazione medio : q*G*A = I 
 % densità di corrente all'emettitore : j = I/(2*pi*re*q)
@@ -123,7 +125,7 @@ genin = genfull(2:end-1)/(Jbar/xbar);
 %% ALPHA ------------------------------------------------------------------
 
 % alphaAnalytic = (2*pi*r0)/(A);
-alphaZ = 1.1397e+04;  % 54;
+% alphaZ = 1.1397e+04;  % 54;
 % alphaTemp = ones(K);
 % alphaTemp(1:50) = linspace(0,1,50);
 % alphaZv = zeros(lr,1);

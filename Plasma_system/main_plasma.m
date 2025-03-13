@@ -1,10 +1,8 @@
-addpath('.\Plasma_system\');
-
 close all;
 clear;
 
+addpath('.\Plasma_system\');
 load('.\Plasma_system\ExpData.mat')
-load('.\Plasma_system\XSol.mat');
 
 idx = 14;   % 14
 Iz = xxZheng(idx,"I").(1) * 10^(-4);     % microV/cm converted to V/m
@@ -18,88 +16,115 @@ Vsrt = Vz;                   % Voltage at r=1 and t=1  [V]
 Vend = Vz;                   % Ending voltage at r=1 and t=K*dt  [V]
 S = 0;                      % random constant  [?]
 N = 1e7;                      % density constant [m-3]
+alphaZ = 1.13968e+04;  % 54;
+
+
 
 Dati_plasma;
 
+
 %% SOLVE ------------------------------------------------------------------
+% true for constant generation term for alpha*Jn gen term
+solveConstGen = true;
+
+% load steady state solution of const gen term
+if ~solveConstGen
+    load('.\Plasma_system\Xsol.mat');
+    X(:,1) = Xsol;
+end
+
 solve_plasma;
 
+% save steady state solution if solved with const gen term
+if solveConstGen
+    Xsol = X(:,end);
+    save(fullfile(".\Plasma_system\", "Xsol.mat"), 'Xsol');
+end
+
 %% PLOT -------------------------------------------------------------------
-concentration_plot = 1;
-potential_plot = 1;
-current_plot = 1;
+% set to 0 for no plot, to 1 for animation, to K for last plot. 
+concentration_plot = K;
+potential_plot = K;
+current_plot = K;
 
 plot_plasma;
 
 %% POST PROCESSING --------------------------------------------------------
 clc
 
+Jn = Comp_current(r,mun,q,vEnd,Vth,-1,nEnd);
+Jp = Comp_current(r,mup,q,vEnd,Vth, 1,pEnd);
+JJ = Jn + Jp;
+
 % Check if JJ is constant
 if std(JJ) / mean(JJ) < 1e-2 
     Ic = mean(JJ);
     Id = abs(Iz - Ic);
     % Display results
-    fprintf('Vz = %.2f\n', Vz)
-    fprintf('Iz = %.7f\n', Iz);
-    fprintf('Ic = %.7f\n', Ic);
-    fprintf('Id = %.7f\n', Id);
+    fprintf('Vz = %.4s\n', Vz)
+    fprintf('Iz = %.5s\n', Iz);
+    fprintf('Ic = %.5s\n', Ic);
+    fprintf('Id = %.5s\n', Id);
 else
     fprintf('JJ is not constant. \n');
 end
 
-%% CALCULATING ALPHA ------------------------------------------------------
-M_full = ax_mass(r, 1);
-x_medi = (r(1:end-1)+r(2:end))/2;
-M_full_centers = ax_mass(x_medi,1);
-
-alphaPlot = 1.1397e+04;
-
-R_full = Plasma_rhs(r, vEnd, nEnd, mun, alphaPlot, Vth, -1);
-Ar_full = Plasma_rhs2(r, vEnd, mun, alphaPlot, Vth, -1);
-Jn = Comp_current(r,mun,q,vEnd,Vth,-1,nEnd);
-
-figure()
-title('Comparison of Integral of different generation terms')
-hold on; 
-% plot(x_medi,M_full_centers*Jn/(2*pi*q),"b-o", 'DisplayName', 'Jn');
-plot(r, M_full*genfull, "k-s", 'DisplayName', 'Const Gen');
-plot(r,Ar_full*nEnd,"-*",'DisplayName', 'Rhs2' );    
-% plot(r,-R_full,"r-x", 'DisplayName', 'Rhs1'); 
-set(gca, 'YScale', 'log') % Change y-axis to log scale
-set(gca, 'XScale', 'log') % Change y-axis to log scale
-legend('Location', 'best'); 
-hold off;
-grid on;
-
-
 
 %% INTEGRATION ------------------------------------------------------------
+Ar_full = Plasma_rhs2(r, vEnd, mun, 1, Vth, -1);
 reactionTerm = Ar_full*nEnd;
 
+% Integration of J with Plasma_rhs2 
 intJAll = sum(reactionTerm);
 intJ1 = sum(reactionTerm(1:idx));
 % intJ2 = sum(reactionTerm(idx+1:end));
 
+% Integral of const generation term with mass matrix 
 intGen = sum(M_full*genfull);
 
-
+% Alpha is ratio of the two integrals over the ionization areas 
 alphaAll = intGen/intJAll;
-alphaSG = intGen/intJ1;
+alphaSG = intGen/intJ1; % senza gobba
+
+fprintf('alpha = %.5s\n', alphaAll);
+
+%% PLOTTING GEN TERM ------------------------------------------------------
+M_full = ax_mass(r, 1);
+
+% Test for integration over i-1/2 to i+1/2 with Mass matrix
+% M_full_centers = ax_mass(x_medi,1);
+% x_medi = (r(1:end-1)+r(2:end))/2;
+
+alphaPlot = alphaAll;    
+R_full = Plasma_rhs(r, vEnd, nEnd, mun, alphaPlot, Vth, -1);
+Ar_full = Plasma_rhs2(r, vEnd, mun, alphaPlot, Vth, -1);
+Jn = Comp_current(r,mun,q,vEnd,Vth,-1,nEnd);
+
+% figure()
+% title('Comparison of Integral of different generation terms')
+% hold on; 
+% % plot(x_medi,M_full_centers*Jn/(2*pi*q),"b-o", 'DisplayName', 'Jn');
+% plot(r, M_full*genfull, "k-s", 'DisplayName', 'Const Gen');
+% plot(r,Ar_full*nEnd,"-*",'DisplayName', 'Rhs2' );    
+% % plot(r,-R_full,"r-x", 'DisplayName', 'Rhs1'); 
+% set(gca, 'YScale', 'log') % Change y-axis to log scale
+% set(gca, 'XScale', 'log') % Change y-axis to log scale
+% legend('Location', 'best'); 
+% hold off;
+% grid on;
 
 
 
-%% DIMENSIOANL ANALYSIS
+%% DIMENSIONAL ANALYSIS
 
-Av_grad = ax_gradient(r);
-JnTerm1 = Av_grad*nEnd;
-JnTerm2 = -(nEnd.*Av_grad*vEnd)/Vth;
-JnTest = q*Vth*mun*abs(JnTerm1 - JnTerm2);
-% JnTest = (nEnd.*Av_grad*vEnd);
-
-% JnTestAbs = (JnTest + abs(JnTest))/2;
-figure;
-plot(r,r.*JnTest,"k-o");
-set(gca, 'YScale', 'log') % Change y-axis to log scale
-set(gca, 'XScale', 'log') % Change y-axis to log scale
-grid on;
+% Av_grad = ax_gradient(r); % Computes the gradient with FD of second order
+% JnTerm1 = Av_grad*nEnd;   % dn/dx
+% JnTerm2 = -(nEnd.*Av_grad*vEnd)/Vth; % -n*dv/dx
+% JnTest = q*Vth*mun*abs(JnTerm1 - JnTerm2);
+% 
+% figure;
+% plot(r,r.*JnTest,"k-o");
+% set(gca, 'YScale', 'log') % Change y-axis to log scale
+% set(gca, 'XScale', 'log') % Change y-axis to log scale
+% grid on;
 

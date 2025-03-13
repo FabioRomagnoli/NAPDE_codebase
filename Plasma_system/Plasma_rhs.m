@@ -11,4 +11,4 @@ function R = Plasma_rhs(r, v, n, mu, alpha, Vth, z)
     xJ_l = mu*Vth./(log(r(1:end-1) ./ r(2:end))).*(nBn-nBp).*dr/2;
     xJ_u = mu*Vth./(log(r(1:end-1) ./ r(2:end))).*(nBn-nBp).*dr/2;
     
-    R = alpha*([0; xJ_l]+[xJ_u; 0]);
+    R = -alpha*([0; xJ_l]+[xJ_u; 0]);
