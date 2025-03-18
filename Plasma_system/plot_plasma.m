@@ -81,7 +81,7 @@ if current_plot
         JJ = Jn+Jp;
 
         hold on;
-        plot(x_medi,Jn, "DisplayName","Jn");
+        plot(x_medi,Jn,"g-x", "DisplayName","Jn");
         plot(x_medi,Jp, "DisplayName","Jp");
         plot(x_medi,JJ, "DisplayName","JJ");
         hold off;

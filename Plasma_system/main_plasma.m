@@ -1,5 +1,6 @@
 close all;
 clear;
+clc;
 
 addpath('.\Plasma_system\');
 load('.\Plasma_system\ExpData.mat')
@@ -9,29 +10,31 @@ Iz = xxZheng(idx,"I").(1) * 10^(-4);     % microV/cm converted to V/m
 Vz = xxZheng(idx,"V").(1) * 10^(3);      % kV converted to V
 
 % Hyper parameters
-K = 20;                      % Time grid points
+K = 100;                      % Time grid points
+T = 1000;
 lr = 101;
-dt = 1e-4;                    % Time separation  [s]
+dtsrt = 1e-4;                    % Time separation  [s]
 Vsrt = Vz;                   % Voltage at r=1 and t=1  [V]
 Vend = Vz;                   % Ending voltage at r=1 and t=K*dt  [V]
-S = 1e9;                      % random constant  [?]
+S = 0;                      % random constant  [?]
 N = 1e7;                      % density constant [m-3]
-alphaZ = 1.13968e+04;  % 54;
-
-
+alphaZ = 11586.738;  % 54
+% alphaZ = 11397.060;   
+% alphaZ = 1;  % 54
 
 Dati_plasma;
 
 
 %% SOLVE ------------------------------------------------------------------
 % true for constant generation term for alpha*Jn gen term
-solveConstGen = true;
+solveConstGen = false;
+genplots = true;
 
 % load steady state solution of const gen term
-% if ~solveConstGen
-%     load('.\Plasma_system\Xsol.mat');
-%     X(:,1) = Xsol;
-% end
+if ~solveConstGen
+    load('.\Plasma_system\Xsol.mat');
+    X(:,1) = Xsol;
+end
 
 solve_plasma;
 
@@ -71,16 +74,17 @@ end
 
 
 %% INTEGRATION ------------------------------------------------------------
-Ar_full = Plasma_rhs2(r, vEnd, mun, 1, Vth, -1);
-reactionTerm = Ar_full*nEnd;
+genIntFull = M_full*genfull;
+
+R_full = Plasma_rhs(r, vEnd, nEnd, mun, 1, Vth, -1);
 
 % Integration of J with Plasma_rhs2 
-intJAll = sum(reactionTerm);
-intJ1 = sum(reactionTerm(1:idx));
+intJAll = sum(R_full);
+intJ1 = sum(R_full(2:idx));
 % intJ2 = sum(reactionTerm(idx+1:end));
 
 % Integral of const generation term with mass matrix 
-intGen = sum(M_full*genfull);
+intGen = sum(genIntFull);
 
 % Alpha is ratio of the two integrals over the ionization areas 
 alphaAll = intGen/intJAll;
@@ -91,45 +95,44 @@ fprintf('alphaSG =  %.3f\n', alphaSG);
 fprintf('alphaDif = %.3f\n', abs(alphaAll - alphaSG));
 
 
+R_full = Plasma_rhs(r, vEnd, nEnd, mun, alphaSG, Vth, -1);
+summDiff = sum(genIntFull(2:idx) - R_full(2:idx));
+fprintf('summDiff = %.3f\n', summDiff);
+
+
+figure;
+plot(r(2:idx),genIntFull(2:idx) - R_full(2:idx),"k-o");
+% set(gca, 'YScale', 'log') % Change y-axis to log scale
+set(gca, 'XScale', 'log') % Change y-axis to log scale
+grid on;
+
+
 
 %% PLOTTING GEN TERM ------------------------------------------------------
-M_full = ax_mass(r, 1);
-
 % Test for integration over i-1/2 to i+1/2 with Mass matrix
 x_medi = (r(1:end-1)+r(2:end))/2;
 dd = [0; diff(x_medi)/2] + [diff(x_medi)/2; 0];
 
 
-alphaPlot = alphaZ;    
+alphaPlot = alphaSG;    
 R_full = Plasma_rhs(r, vEnd, nEnd, mun, alphaPlot, Vth, -1);
 Ar_full = Plasma_rhs2(r, vEnd, mun, alphaPlot, Vth, -1);
-Jn = dd.*Comp_current(r,mun,q,vEnd,Vth,-1,nEnd);
+Jn = Comp_current(r,mun,q,vEnd,Vth,-1,nEnd);
 
 figure()
 title('Comparison of Integral of different generation terms')
 hold on; 
-plot(x_medi,alphaPlot*Jn/(2*pi*q),"b-o", 'DisplayName', 'Jn');
-plot(r, M_full*genfull, "k-s", 'DisplayName', 'Const Gen');
-plot(r, Ar_full*nEnd,"-*",'DisplayName', 'Rhs2' );    
-plot(r, R_full,"r-x", 'DisplayName', 'Rhs1'); 
+% plot(x_medi,alphaPlot*Jn/(2*pi*q),"b-o", 'DisplayName', 'Jn [1/m^2*s]');
+% plot(r,genfull,"b-o", 'DisplayName');
+plot(r(1:idx), genIntFull(1:idx), "k-s", 'DisplayName', 'Const Gen');
+% plot(r, Ar_full*nEnd,"-*",'DisplayName', 'Rhs2' );    
+plot(r(1:idx), R_full(1:idx),"r-x", 'DisplayName', 'Rhs1'); 
 set(gca, 'YScale', 'log') % Change y-axis to log scale
 set(gca, 'XScale', 'log') % Change y-axis to log scale
 legend('Location', 'best'); 
+ylabel("RHS [1/(ms)]")
 hold off;
 grid on;
 
 
-
-%% DIMENSIONAL ANALYSIS
-
-% Av_grad = ax_gradient(r); % Computes the gradient with FD of second order
-% JnTerm1 = Av_grad*nEnd;   % dn/dx
-% JnTerm2 = -(nEnd.*Av_grad*vEnd)/Vth; % -n*dv/dx
-% JnTest = q*Vth*mun*abs(JnTerm1 - JnTerm2);
-% 
-% figure;
-% plot(r,r.*JnTest,"k-o");
-% set(gca, 'YScale', 'log') % Change y-axis to log scale
-% set(gca, 'XScale', 'log') % Change y-axis to log scale
-% grid on;
 

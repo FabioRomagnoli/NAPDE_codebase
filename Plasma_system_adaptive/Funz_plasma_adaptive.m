@@ -1,4 +1,4 @@
-function [F,jac]=Funz_jacob_plasma(x, x0,v_bc,n_bc,p_bc,dt,r,mun,mup,eps,alpha,S,Vth, beta, Ei, gen)
+function [F,jac]=Funz_plasma_adaptive(x, x0,v_bc,n_bc,p_bc,dt,r,mun,mup,eps,alpha,S,Vth)
 % v_bc,n_bc e l'altro sono vettori colonna di 2 elementi che contengono le
 % condizioni al bordo di quelle var
 % NB x va passato colonna, è ridotto, dunque ha lunghezza lr-6
@@ -11,32 +11,17 @@ v = x(1:lr-2);
 n = x(lr-1:2*lr-4);
 p = x(2*lr-3:end);
 
-
 %% MATRIX DEFINITIONS -----------------------------------------------------
 A_full = ax_laplacian (r,eps);
 M_full = ax_mass(r, 1);
 An_full = ax_dd(r, [v_bc(1); v; v_bc(2)], mun, Vth, -1);
 Ap_full = ax_dd(r, [v_bc(1); v; v_bc(2)], mup, Vth, 1); % Così il numero di valenza è corretto
 
-% Av_grad = ax_gradient(r);
-% E = -Av_grad*[v_bc(1); v; v_bc(2)];
-% alpha = beta .* exp(-Ei ./ E); % Townsend formula
-
-% % Plot results
-% figure;
-% semilogy(r, alpha, 'b', 'LineWidth', 2); % Log-scale for better visualization
-% xlabel('Radius r (m)');
-% ylabel('Ionization Coefficient \alpha (1/m)');
-% title('Townsend Ionization Coefficient \alpha(r)');
-% grid on;
-
 %% GENERATION TERM --------------------------------------------------------
 Ar_full = Plasma_rhs2(r, [v_bc(1); v; v_bc(2)], mun, alpha, Vth, -1);
 
-R = zeros(lr-2,1);
 R_full = Plasma_rhs(r, [v_bc(1); v; v_bc(2)], [n_bc(1); n; n_bc(2)], mun, alpha, Vth, -1);
-R(1:35) = R_full(2:36);
-% R = R_full(2:end-1);
+R = R_full(2:end-1);
 
 %% BC CORRECTION ----------------------------------------------------------
 A = A_full(2:end-1,2:end-1);
@@ -70,37 +55,6 @@ rhs = [zeros(lr-2,1);  dt*M*S + M*n0  ; dt*M*S + M*p0];
 
 bounds = [A_bc*v_bc; dt*An_bc*n_bc; dt*Ap_bc*p_bc];
 full_rhs = rhs - bounds;
-
-
-%% FULL SYSTEM ------------------------------------------------------------
-% Rhs_red = zeros(lr-2,1);
-% Rhs_red(1:36) = Ar(1:36,1:36)*n(1:36);
-% Rhs_red(36) = Rhs_red(36)+Ar(36,37)*n(37);
-% % reduced system without gobba 
-% F = NL*x + [zeros(lr-2,1); -dt*(Rhs_red+Ar_bc(:,1)*n_bc(1)); -dt*(Rhs_red+Ar_bc(:,1)*n_bc(1))] - full_rhs;
-
-% for plasma_rhs2 and 3 not reduced (best working so far?)
-% F = NL*x + [zeros(lr-2,1); -dt*(Ar*n+Ar_bc*n_bc); -dt*(Ar*n+Ar_bc*n_bc)] - full_rhs ;
-
-
-%% 
-
-% figure();
-% title('solution')
-% hold on; 
-% semilogy(r(2:end-1), M*gen, "b-o", 'DisplayName', 'Gen');
-% semilogy(r(2:end-1), R, "k-s", 'DisplayName', 'rhs1');
-% % semilogy(rin(2:end-1), Rhs_red+Ar_bc(:,1)*n_bcin(1), "r-*", 'DisplayName', 'Rh2')
-% hold off; 
-% 
-% legend();
-% set(gca, 'YScale', 'log')
-% set(gca, 'XScale', 'log')
-% grid on; 
-
-
-%% 
-% Rnew = M*gen +  (R - M*gen)./2;
 
 
 % for plasma_rhs1 
