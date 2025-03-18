@@ -10,8 +10,8 @@ Iz = xxZheng(idx,"I").(1) * 10^(-4);     % microV/cm converted to V/m
 Vz = xxZheng(idx,"V").(1) * 10^(3);      % kV converted to V
 
 % Hyper parameters
-K = 100001;                      % Time save points
-T = 10;                        % Final time [s]
+K = 1000001;                     % Time save points
+T = 100;                        % Final time [s]
 lr = 101;
 dt0 = 1e-4;                    % Time separation  [s]
 Vsrt = 0;                   % Voltage at r=1 and t=1  [V]
@@ -32,7 +32,7 @@ solve_plasma_adaptive;
 
 %% PLOT -------------------------------------------------------------------
 % set to 0 for no plot, to 1 for animation, to K for last plot. 
-concentration_plot = 1;
+concentration_plot = 0;
 potential_plot = 1;
 current_plot = 1;
 
