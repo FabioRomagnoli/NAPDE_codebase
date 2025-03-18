@@ -13,14 +13,14 @@ Vz = xxZheng(idx,"V").(1) * 10^(3);      % kV converted to V
 K = 100;                      % Time grid points
 T = 1000;
 lr = 101;
-dtsrt = 1e-4;                    % Time separation  [s]
+dt = 1e-4;                    % Time separation  [s]
 Vsrt = Vz;                   % Voltage at r=1 and t=1  [V]
 Vend = Vz;                   % Ending voltage at r=1 and t=K*dt  [V]
 S = 0;                      % random constant  [?]
 N = 1e7;                      % density constant [m-3]
-alphaZ = 11586.738;  % 54
+% alphaZ = 11586.738;  % 54
 % alphaZ = 11397.060;   
-% alphaZ = 1;  % 54
+alphaZ = 10;  % 54
 
 Dati_plasma;
 
@@ -28,10 +28,10 @@ Dati_plasma;
 %% SOLVE ------------------------------------------------------------------
 % true for constant generation term for alpha*Jn gen term
 solveConstGen = false;
-genplots = true;
+genplots = false;
 
 % load steady state solution of const gen term
-if ~solveConstGen
+if solveConstGen
     load('.\Plasma_system\Xsol.mat');
     X(:,1) = Xsol;
 end

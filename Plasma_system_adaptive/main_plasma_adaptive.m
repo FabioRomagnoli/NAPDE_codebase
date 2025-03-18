@@ -14,7 +14,7 @@ K = 1000001;                     % Time save points
 T = 100;                        % Final time [s]
 lr = 101;
 dt0 = 1e-4;                    % Time separation  [s]
-Vsrt = 0;                   % Voltage at r=1 and t=1  [V]
+Vsrt = 0.1;                   % Voltage at r=1 and t=1  [V]
 Vend = Vz;                   % Ending voltage at r=1 and t=K*dt  [V]
 S = 0;                      % random constant  [?]
 N = 1e7;                      % density constant [m-3]
@@ -32,7 +32,7 @@ solve_plasma_adaptive;
 
 %% PLOT -------------------------------------------------------------------
 % set to 0 for no plot, to 1 for animation, to K for last plot. 
-concentration_plot = 0;
+concentration_plot = 1;
 potential_plot = 1;
 current_plot = 1;
 

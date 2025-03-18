@@ -113,10 +113,10 @@ if nargout>1
     J11 = A;
     J12 = M;
     J13 = -M;
-    J21 = dt*mun*dAn(2:end-1, 2:end-1) - mun*dt*dAr(2:end-1,2:end-1);
+    J21 = dt*mun*dAn(2:end-1, 2:end-1) - alpha*mun*dt*dAr(2:end-1,2:end-1);
     J22 = M + dt*An - dRn;
     J23 = zeri;
-    J31 = dt*mup*dAp(2:end-1, 2:end-1) - mun*dt*dAr(2:end-1,2:end-1); 
+    J31 = dt*mup*dAp(2:end-1, 2:end-1) - alpha*mun*dt*dAr(2:end-1,2:end-1); 
     J32 = -dRn;
     J33 = M + dt*Ap;
     jac = [J11, J12, J13;

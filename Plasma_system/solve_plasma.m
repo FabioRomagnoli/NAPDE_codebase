@@ -3,7 +3,7 @@ for k=1:K
     x_prec = X([2:lr-1 lr+2:2*lr-1 2*lr+2:end-1],k);
     
 
-    if genplots
+    if false
         M_full = ax_mass(rin, 1);
         M = M_full(2:end-1,2:end-1);
 
@@ -60,7 +60,7 @@ for k=1:K
     [x,fval,exit,output,jacobian] = fsolve(fun,initial_guess,options);
     
 
-    if genplots
+    if false
         M_full = ax_mass(rin, 1);
         M = M_full(2:end-1,2:end-1);
 
@@ -97,7 +97,7 @@ for k=1:K
     end
 
 
-    if  genplots
+    if  false
         figure();
         vsol = x(1:lr-2);
         nsol = x(lr-1:2*lr-4);
